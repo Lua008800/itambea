@@ -119,15 +119,14 @@
         </div>
     </div>
 
-    <!-- Main Container (initially hidden) -->
-    <div id="app-container" class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8 hidden">
-        <!-- O conteúdo da aplicação principal (cabeçalho, navegação, conteúdo, etc.) -->
-        <header class="sticky top-0 bg-gray-900 py-4 z-10 flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-bold text-blue-400">Itambe</h1>
+    <!-- Main Container (initially hidden, content will be populated by JS) -->
+    <div id="app-container" class="container mx-auto max-w-7xl hidden">
+         <header class="sticky top-0 bg-gray-900 py-4 z-10 flex justify-between items-center mb-8 border-b border-gray-700 px-4 sm:px-0">
+            <h1 class="text-3xl sm:text-4xl font-bold text-blue-400">Itambe</h1>
             <div class="flex items-center gap-4">
                 <div class="text-right">
-                    <p class="text-sm text-gray-400">Saldo Disponível</p>
-                    <p id="balance" class="text-2xl font-semibold text-green-400">R$ 0,00</p>
+                    <p class="text-xs sm:text-sm text-gray-400">Saldo</p>
+                    <p id="balance" class="text-xl sm:text-2xl font-semibold text-green-400">R$ 0,00</p>
                 </div>
                 <button id="profile-toggle-button" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -143,8 +142,8 @@
                 </ul>
             </div>
         </nav>
-        <h2 id="mobile-page-title" class="text-2xl font-semibold mb-6 sm:hidden"></h2>
-        <main>
+        <h2 id="mobile-page-title" class="text-2xl font-semibold mb-6 sm:hidden px-4 sm:px-0"></h2>
+        <main class="px-4 sm:px-0">
             <div id="products" class="tab-content"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">Escolha um produto para se afiliar</h2><div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div></div>
             <div id="my-products" class="tab-content hidden"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">Os seus produtos afiliados</h2><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><ul id="my-product-list" class="space-y-4"></ul><p id="no-products-message" class="text-center text-gray-500">Ainda não se afiliou a nenhum produto.</p></div></div>
             <div id="affiliate" class="tab-content hidden"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">O seu Link de Convite e Ganhos</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-semibold mb-4">O seu Link Exclusivo</h3><p class="text-gray-400 mb-4">Partilhe este link para convidar novos utilizadores e ganhar comissões.</p><div class="flex bg-gray-700 rounded-md p-2"><input id="referral-link" type="text" class="bg-transparent w-full text-gray-300 focus:outline-none" value="" readonly><button id="copy-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Copiar</button></div></div><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-semibold mb-4">Resumo de Ganhos</h3><div class="space-y-3"><div class="flex justify-between"><span class="text-gray-400">Convidados (Nível 1 - 20%)</span><span id="earnings-level-1" class="font-semibold text-green-400">+ R$ 0,00</span></div><div class="flex justify-between"><span class="text-gray-400">Convidados (Nível 2 - 5%)</span><span id="earnings-level-2" class="font-semibold text-green-400">+ R$ 0,00</span></div><hr class="border-gray-700"><div class="flex justify-between text-lg"><span class="font-bold">Total de Ganhos</span><span id="earnings-total" class="font-bold text-green-300">R$ 0,00</span></div></div></div></div></div>
@@ -188,15 +187,15 @@
         
         let auth = null;
         let db = null;
-        let isAppInitialized = false;
+        let isAppInitialized = false; // Flag to check if app logic is initialized
 
         try {
-            // **IMPORTANTE**: Use a sua nova configuração do Firebase aqui
+            // **NOVA CONFIGURAÇÃO DO FIREBASE (PROJETO itambe1)**
             const firebaseConfig = {
                 apiKey: "AIzaSyAAcSljFY_EZnNZyeDlRD_A5Ac6xMdlfYI",
                 authDomain: "itambe1.firebaseapp.com",
                 projectId: "itambe1",
-                storageBucket: "itambe1.appspot.com", // Corrigido para .appspot.com
+                storageBucket: "itambe1.appspot.com", // Formato correto
                 messagingSenderId: "994625835321",
                 appId: "1:994625835321:web:a778e249b04671e83c98e8",
                 measurementId: "G-JP3BRJYES3"
@@ -249,16 +248,15 @@
                 if (user) {
                     authScreen.classList.add('hidden');
                     appContainer.classList.remove('hidden');
-                    if (!isAppInitialized) {
+                    // Only initialize app logic once
+                    if (!isAppInitialized) { 
                         initializeAppLogic(user, db);
                         isAppInitialized = true;
                     }
                 } else {
                     authScreen.classList.remove('hidden');
                     appContainer.classList.add('hidden');
-                    // Limpa o conteúdo da app ao fazer logout para evitar mostrar dados antigos brevemente
-                    appContainer.innerHTML = ''; 
-                    isAppInitialized = false;
+                    isAppInitialized = false; // Reset flag on logout
                 }
             });
 
@@ -317,49 +315,7 @@
                     });
             });
             
-            function initializeAppLogic(user, dbInstance) {
-                // Injeta o HTML da aplicação principal no container
-                appContainer.innerHTML = `
-                    <header class="sticky top-0 bg-gray-900 py-4 z-10 flex justify-between items-center mb-8 border-b border-gray-700 px-4 sm:px-0">
-                        <h1 class="text-3xl sm:text-4xl font-bold text-blue-400">Itambe</h1>
-                        <div class="flex items-center gap-4">
-                            <div class="text-right">
-                                <p class="text-xs sm:text-sm text-gray-400">Saldo</p>
-                                <p id="balance" class="text-xl sm:text-2xl font-semibold text-green-400">R$ 0,00</p>
-                            </div>
-                            <button id="profile-toggle-button" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            </button>
-                        </div>
-                    </header>
-                    <nav class="hidden sm:block mb-8">
-                        <div class="border-b border-gray-700">
-                            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-400">
-                                <li class="mr-2"><button class="tab-button inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-300 hover:border-gray-300" data-tab="products">Produtos para Afiliar</button></li>
-                                <li class="mr-2"><button class="tab-button inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-300 hover:border-gray-300" data-tab="my-products">Os Meus Produtos</button></li>
-                                <li class="mr-2"><button class="tab-button inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-300 hover:border-gray-300" data-tab="affiliate">O Meu Link e Lucros</button></li>
-                            </ul>
-                        </div>
-                    </nav>
-                    <h2 id="mobile-page-title" class="text-2xl font-semibold mb-6 sm:hidden px-4 sm:px-0"></h2>
-                    <main class="px-4 sm:px-0">
-                        <div id="products" class="tab-content"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">Escolha um produto para se afiliar</h2><div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div></div>
-                        <div id="my-products" class="tab-content hidden"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">Os seus produtos afiliados</h2><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><ul id="my-product-list" class="space-y-4"></ul><p id="no-products-message" class="text-center text-gray-500">Ainda não se afiliou a nenhum produto.</p></div></div>
-                        <div id="affiliate" class="tab-content hidden"><h2 class="text-2xl font-semibold mb-6 hidden sm:block">O seu Link de Convite e Ganhos</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-semibold mb-4">O seu Link Exclusivo</h3><p class="text-gray-400 mb-4">Partilhe este link para convidar novos utilizadores e ganhar comissões.</p><div class="flex bg-gray-700 rounded-md p-2"><input id="referral-link" type="text" class="bg-transparent w-full text-gray-300 focus:outline-none" value="" readonly><button id="copy-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">Copiar</button></div></div><div class="bg-gray-800 p-6 rounded-lg shadow-lg"><h3 class="text-xl font-semibold mb-4">Resumo de Ganhos</h3><div class="space-y-3"><div class="flex justify-between"><span class="text-gray-400">Convidados (Nível 1 - 20%)</span><span id="earnings-level-1" class="font-semibold text-green-400">+ R$ 0,00</span></div><div class="flex justify-between"><span class="text-gray-400">Convidados (Nível 2 - 5%)</span><span id="earnings-level-2" class="font-semibold text-green-400">+ R$ 0,00</span></div><hr class="border-gray-700"><div class="flex justify-between text-lg"><span class="font-bold">Total de Ganhos</span><span id="earnings-total" class="font-bold text-green-300">R$ 0,00</span></div></div></div></div></div>
-                    </main>
-                    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-2 sm:hidden"><ul class="flex justify-around text-sm font-medium text-center text-gray-400"><li><button class="tab-button inline-block p-2" data-tab="products">Produtos para Afiliar</button></li><li><button class="tab-button inline-block p-2" data-tab="my-products">Os Meus Produtos</button></li><li><button class="tab-button inline-block p-2" data-tab="affiliate">O Meu Link e Lucros</button></li></ul></nav>
-                    <div id="profile-sidebar-backdrop" class="fixed inset-0 bg-black/60 z-30 hidden"></div>
-                    <div id="profile-sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-gray-800 shadow-2xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-                        <div class="flex justify-between items-center p-4 border-b border-gray-700 sticky top-0 bg-gray-800"><h2 class="text-2xl font-semibold">Conta</h2><button id="sidebar-close-button" class="p-2 rounded-full hover:bg-gray-700 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-                        <nav class="border-b border-gray-700"><ul class="flex justify-around text-sm font-medium text-center text-gray-400"><li class="w-full"><button class="sidebar-tab-button p-4 w-full border-b-2 border-transparent" data-sidetab="profile-content">Perfil</button></li><li class="w-full"><button class="sidebar-tab-button p-4 w-full border-b-2 border-transparent" data-sidetab="finance-content">Finanças</button></li></ul></nav>
-                        <div class="p-6 space-y-8 overflow-y-auto flex-grow">
-                            <div id="profile-content" class="sidebar-tab-content"><form id="profile-form" class="space-y-6 bg-gray-900/50 p-6 rounded-lg"><h3 class="text-xl font-semibold">Dados Pessoais</h3><div><label for="profile-name" class="block text-sm font-medium text-gray-400 mb-1">Nome de Utilizador</label><input type="text" id="profile-name" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="O seu nome completo"></div><div><label class="block text-sm font-medium text-gray-400 mb-1">Número de Telefone</label><p id="profile-phone" class="w-full bg-gray-700 rounded-md p-3 text-gray-400"></p></div><button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700 transition-colors">Guardar Alterações</button></form><div id="pix-section" class="mt-8 bg-gray-900/50 p-6 rounded-lg"><h3 class="text-xl font-semibold mb-4">Dados PIX (Apenas um registo)</h3><div id="pix-setup-container"><form id="pix-form" class="space-y-4"><div><label for="pix-full-name" class="block text-sm font-medium text-gray-400 mb-1">Nome Completo (para PIX)</label><input type="text" id="pix-full-name" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required></div><div><label for="pix-key" class="block text-sm font-medium text-gray-400 mb-1">A sua Chave PIX</label><input type="text" id="pix-key" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="CPF, e-mail, telefone, etc." required></div><button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700 transition-colors">Guardar Chave PIX</button></form></div><div id="pix-display-container" class="hidden space-y-4"><div><label class="block text-sm font-medium text-gray-400 mb-1">Nome Completo</label><p id="pix-display-name" class="w-full bg-gray-700 rounded-md p-3 text-gray-300"></p></div><div><label class="block text-sm font-medium text-gray-400 mb-1">Chave PIX</label><p id="pix-display-key" class="w-full bg-gray-700 rounded-md p-3 text-gray-300"></p></div><p class="text-xs text-gray-500">Os dados PIX não podem ser alterados por motivos de segurança.</p></div></div></div>
-                            <div id="finance-content" class="sidebar-tab-content hidden"><div class="space-y-8"><div class="bg-gray-900/50 p-6 rounded-lg"><h4 class="text-lg font-semibold mb-4">Realizar Depósito</h4><div id="promotion-banner" class="bg-blue-900/50 border border-blue-700 text-blue-300 text-sm p-3 rounded-md mb-4 hidden"><strong>Primeiro Depósito:</strong> Deposite R$ 200,00+ e ganhe <strong>50% de bónus!</strong></div><form id="deposit-form" class="space-y-4"><div><label for="deposit-amount" class="block text-sm font-medium text-gray-400 mb-1">Valor (Mín. R$ 40 / Máx. R$ 5.000)</label><input type="number" id="deposit-amount" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 200"></div><button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700 transition-colors">Gerar QR Code PIX</button></form></div><div class="bg-gray-900/50 p-6 rounded-lg"><h4 class="text-lg font-semibold mb-4">Solicitar Levantamento</h4><div class="bg-yellow-900/50 border border-yellow-700 text-yellow-300 text-sm p-3 rounded-md mb-4"><strong>Atenção:</strong> Seg-Sex, das 10:00 às 16:00.</div><div id="register-pix-prompt" class="hidden text-center bg-gray-700 p-4 rounded-md"><p class="text-gray-400">Registe uma chave PIX na secção "Perfil" para poder levantar.</p></div><form id="withdraw-form" class="space-y-4 hidden"><div><label for="withdraw-amount" class="block text-sm font-medium text-gray-400 mb-1">Valor (Mín. R$ 30 / Máx. R$ 5.000)</label><input type="number" id="withdraw-amount" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: 150"></div><div><label class="block text-sm font-medium text-gray-400 mb-1">Levantar para a Chave PIX</label><p id="saved-pix-key" class="w-full bg-gray-900 rounded-md p-2 text-gray-300 font-mono"></p></div><button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-md hover:bg-blue-700 transition-colors">Solicitar Levantamento</button></form></div></div></div>
-                        </div>
-                        <div class="p-6 mt-auto"><button id="logout-button" class="w-full bg-red-600/80 text-white font-bold py-3 rounded-md hover:bg-red-600 transition-colors">Sair da Conta</button></div>
-                    </div>
-                `;
-                
+            function initializeAppLogic(user, dbInstance) { 
                 let userDataUnsubscribe = null; 
                 let userAffiliatedProductsUnsubscribe = null;
                 let currentBalance = 0;
@@ -434,21 +390,31 @@
                         }
                         
                         promotionBanner.classList.toggle('hidden', userHasDeposited);
+                    } else {
+                        console.error("Documento do utilizador não encontrado!");
                     }
+                }, (error) => {
+                     console.error("Erro ao obter dados do utilizador:", error);
+                     showNotification('Erro ao carregar dados do perfil.', 'error');
                 });
                 
                 async function loadAllProducts() {
-                    const productsRef = collection(dbInstance, "products");
-                    const q = query(productsRef, orderBy("price"));
-                    const querySnapshot = await getDocs(q);
+                    try {
+                        const productsRef = collection(dbInstance, "products");
+                        const q = query(productsRef, orderBy("price"));
+                        const querySnapshot = await getDocs(q);
 
-                    let html = '';
-                    querySnapshot.forEach((doc) => {
-                        const product = doc.data();
-                        html += `<div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col product-card"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-32 object-cover"><div class="p-4 flex flex-col flex-grow"><h3 class="font-semibold text-lg mb-2">${product.name}</h3><div class="space-y-2 text-sm mt-auto"><div class="flex justify-between"><span class="text-gray-400">Preço:</span><span class="font-medium">${formatCurrency(product.price)}</span></div><div class="flex justify-between"><span class="text-gray-400">Ciclo:</span><span class="font-medium">${product.cycleDays} dias</span></div><div class="flex justify-between"><span class="text-gray-400">Retorno Total:</span><span class="font-medium text-green-400">${formatCurrency(product.totalReturn)}</span></div></div><button data-product-id="${doc.id}" data-product-price="${product.price}" class="affiliate-button mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-blue-700 transition-colors">Afiliar-se</button></div></div>`;
-                    });
-                    productListContainer.innerHTML = html;
-                    updateAllProductsUI();
+                        let html = '';
+                        querySnapshot.forEach((doc) => {
+                            const product = doc.data();
+                            html += `<div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col product-card"><img src="${product.imageUrl}" alt="${product.name}" class="w-full h-32 object-cover"><div class="p-4 flex flex-col flex-grow"><h3 class="font-semibold text-lg mb-2">${product.name}</h3><div class="space-y-2 text-sm mt-auto"><div class="flex justify-between"><span class="text-gray-400">Preço:</span><span class="font-medium">${formatCurrency(product.price)}</span></div><div class="flex justify-between"><span class="text-gray-400">Ciclo:</span><span class="font-medium">${product.cycleDays} dias</span></div><div class="flex justify-between"><span class="text-gray-400">Retorno Total:</span><span class="font-medium text-green-400">${formatCurrency(product.totalReturn)}</span></div></div><button data-product-id="${doc.id}" data-product-price="${product.price}" class="affiliate-button mt-4 w-full bg-blue-600 text-white font-bold py-2 rounded-md hover:bg-blue-700 transition-colors">Afiliar-se</button></div></div>`;
+                        });
+                        productListContainer.innerHTML = html;
+                        updateAllProductsUI();
+                    } catch (error) {
+                        console.error("Erro ao carregar produtos:", error);
+                        showNotification('Erro ao carregar a lista de produtos.', 'error');
+                    }
                 }
                 
                 function updateAllProductsUI() {
@@ -477,14 +443,21 @@
                             let html = '';
                             querySnapshot.forEach((doc) => {
                                 const product = doc.data();
-                                userAffiliatedProductIds.add(product.productId);
-                                const startDate = product.affiliatedAt.toDate();
-                                const daysPassed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
-                                html += `<li class="flex justify-between items-center bg-gray-700 p-4 rounded-md"><div><h3 class="font-semibold">${product.name}</h3><p class="text-sm text-gray-400">Ciclo: ${daysPassed}/${product.cycleDays} dias</p></div><div class="text-right"><p class="text-green-400 font-bold">+ ${formatCurrency(product.dailyReturn)}</p><p class="text-xs text-gray-500">Retorno diário</p></div></li>`;
+                                if (product.productId && product.affiliatedAt) { // Verifica se dados essenciais existem
+                                    userAffiliatedProductIds.add(product.productId);
+                                    const startDate = product.affiliatedAt.toDate();
+                                    const daysPassed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                                    html += `<li class="flex justify-between items-center bg-gray-700 p-4 rounded-md"><div><h3 class="font-semibold">${product.name || 'Produto sem nome'}</h3><p class="text-sm text-gray-400">Ciclo: ${daysPassed}/${product.cycleDays || 100} dias</p></div><div class="text-right"><p class="text-green-400 font-bold">+ ${formatCurrency(product.dailyReturn)}</p><p class="text-xs text-gray-500">Retorno diário</p></div></li>`;
+                                } else {
+                                     console.warn("Produto afiliado com dados incompletos encontrado:", doc.id, product);
+                                }
                             });
                             myProductListContainer.innerHTML = html;
                         }
                         updateAllProductsUI();
+                    }, (error) => {
+                        console.error("Erro ao carregar os meus produtos:", error);
+                        showNotification('Erro ao carregar os seus produtos.', 'error');
                     });
                 }
 
@@ -495,8 +468,13 @@
                 sidebarBackdrop.addEventListener('click', closeSidebar);
                 logoutButton.addEventListener('click', () => {
                     signOut(auth).then(() => {
+                        // Limpa listeners para evitar erros após logout
                         if (userDataUnsubscribe) userDataUnsubscribe();
                         if (userAffiliatedProductsUnsubscribe) userAffiliatedProductsUnsubscribe();
+                        isAppInitialized = false; // Garante que a app reinicialize no próximo login
+                    }).catch(error => {
+                         console.error("Erro ao fazer logout:", error);
+                         showNotification('Erro ao sair da conta.', 'error');
                     });
                 });
 
@@ -515,7 +493,9 @@
                         mobilePageTitle.textContent = button.textContent;
                     });
                 });
-                document.querySelector('nav.sm\\:block .tab-button[data-tab="products"]').click();
+                // Garante que o clique só acontece se o botão existir
+                 const initialTabButton = document.querySelector('nav.sm\\:block .tab-button[data-tab="products"]');
+                 if(initialTabButton) initialTabButton.click();
                 
                 sidebarTabButtons.forEach(button => {
                     button.addEventListener('click', () => {
@@ -527,7 +507,8 @@
                         });
                     });
                 });
-                document.querySelector('.sidebar-tab-button').click();
+                 const initialSidebarButton = document.querySelector('.sidebar-tab-button');
+                 if(initialSidebarButton) initialSidebarButton.click();
 
                 copyButton.addEventListener('click', () => {
                     referralLinkInput.select();
@@ -646,7 +627,8 @@
                             });
 
                             showNotification(`Afiliação com ${productData.name} bem-sucedida!`);
-                            document.querySelector('.tab-button[data-tab="my-products"]').click();
+                             const myProductsTab = document.querySelector('.tab-button[data-tab="my-products"]');
+                             if(myProductsTab) myProductsTab.click(); // Clica apenas se o botão existir
 
                         } catch (error) {
                             console.error("Erro ao afiliar-se: ", error);

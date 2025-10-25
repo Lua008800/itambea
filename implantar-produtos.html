@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implantação de Produtos Itambe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div class="text-center p-8 bg-gray-800 rounded-lg shadow-2xl">
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">Implantação de Produtos Itambe</h1>
+        <p class="text-gray-400 mb-6">Clique no botão abaixo para apagar os produtos antigos e cadastrar os 30 novos produtos na sua base de dados do Firestore.</p>
+        <button id="deploy-button" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+            Implantar Novos Produtos Agora
+        </button>
+        <p id="status-message" class="mt-4 text-sm"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, writeBatch, getDocs, doc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        // Cole aqui a configuração do seu projeto Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7kka_tnkrNGzgAF8DgFn05Dqmkc9oxFs",
+            authDomain: "itambe-afiliacao.firebaseapp.com",
+            projectId: "itambe-afiliacao",
+            storageBucket: "itambe-afiliacao.appspot.com",
+            messagingSenderId: "733659374011",
+            appId: "1:733659374011:web:2028ca91277e8a4984649e",
+            measurementId: "G-TG621ZL4FQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const deployButton = document.getElementById('deploy-button');
+        const statusMessage = document.getElementById('status-message');
+
+        deployButton.addEventListener('click', async () => {
+            deployButton.disabled = true;
+            statusMessage.textContent = 'A iniciar... Por favor, aguarde.';
+            statusMessage.classList.remove('text-red-500', 'text-green-500');
+
+            try {
+                // Passo 1: Apagar todos os produtos antigos
+                statusMessage.textContent = 'A apagar produtos antigos...';
+                const productsRef = collection(db, "products");
+                const oldProductsSnapshot = await getDocs(productsRef);
+                const deleteBatch = writeBatch(db);
+                oldProductsSnapshot.forEach(doc => {
+                    deleteBatch.delete(doc.ref);
+                });
+                await deleteBatch.commit();
+                console.log("Produtos antigos apagados com sucesso.");
+                statusMessage.textContent = 'Produtos antigos apagados. A criar novos...';
+
+                // Passo 2: Criar os novos produtos
+                const newBatch = writeBatch(db);
+                const productDetails = [
+                    { name: "Iogurte Natural Cremoso", imageUrl: "https://images.pexels.com/photos/4033235/pexels-photo-4033235.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Grego com Mel", imageUrl: "https://images.pexels.com/photos/5966430/pexels-photo-5966430.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Skyr Proteico", imageUrl: "https://images.pexels.com/photos/8356972/pexels-photo-8356972.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Kefir de Frutas", imageUrl: "https://images.pexels.com/photos/5131405/pexels-photo-5131405.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Desnatado Leve", imageUrl: "https://images.pexels.com/photos/4553276/pexels-photo-4553276.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Integral Tradicional", imageUrl: "https://images.pexels.com/photos/237342/pexels-photo-237342.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte com Morango", imageUrl: "https://images.pexels.com/photos/9829621/pexels-photo-9829621.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte com Pêssego", imageUrl: "https://images.pexels.com/photos/6634177/pexels-photo-6634177.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Bebida Láctea Zero Lactose", imageUrl: "https://images.pexels.com/photos/248412/pexels-photo-248412.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Sobremesa Láctea com Aveia", imageUrl: "https://images.pexels.com/photos/1591141/pexels-photo-1591141.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Grego Frutas Vermelhas", imageUrl: "https://images.pexels.com/photos/6192271/pexels-photo-6192271.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Kids Maçã e Banana", imageUrl: "https://images.pexels.com/photos/7993306/pexels-photo-7993306.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Bebida Láctea de Coco", imageUrl: "https://images.pexels.com/photos/4113061/pexels-photo-4113061.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Tradicional com Polpa", imageUrl: "https://images.pexels.com/photos/5747449/pexels-photo-5747449.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Light de Ameixa", imageUrl: "https://images.pexels.com/photos/8468725/pexels-photo-8468725.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Natural Consistente", imageUrl: "https://images.pexels.com/photos/4033235/pexels-photo-4033235.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Grego Baunilha", imageUrl: "https://images.pexels.com/photos/5966430/pexels-photo-5966430.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Skyr Morango", imageUrl: "https://images.pexels.com/photos/8356972/pexels-photo-8356972.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Kefir Natural", imageUrl: "https://images.pexels.com/photos/5131405/pexels-photo-5131405.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Bebida Láctea Desnatada com Fibras", imageUrl: "https://images.pexels.com/photos/4553276/pexels-photo-4553276.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Integral Cremoso", imageUrl: "https://images.pexels.com/photos/237342/pexels-photo-237342.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte com Maracujá", imageUrl: "https://images.pexels.com/photos/6634177/pexels-photo-6634177.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte com Abacaxi", imageUrl: "https://images.pexels.com/photos/9829621/pexels-photo-9829621.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Bebida Láctea Zero Adição de Açúcar", imageUrl: "https://images.pexels.com/photos/6412833/pexels-photo-6412833.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Sobremesa Láctea com Granola", imageUrl: "https://images.pexels.com/photos/1591141/pexels-photo-1591141.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Grego Tradicional", imageUrl: "https://images.pexels.com/photos/5966430/pexels-photo-5966430.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte Kids Uva", imageUrl: "https://images.pexels.com/photos/7993306/pexels-photo-7993306.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Bebida Láctea de Pêssego", imageUrl: "https://images.pexels.com/photos/4113061/pexels-photo-4113061.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Iogurte com Calda de Frutas", imageUrl: "https://images.pexels.com/photos/5747449/pexels-photo-5747449.jpeg?auto=compress&cs=tinysrgb&w=600" },
+                    { name: "Sobremesa Láctea Light com Mel", imageUrl: "https://images.pexels.com/photos/8468725/pexels-photo-8468725.jpeg?auto=compress&cs=tinysrgb&w=600" }
+                ];
+                
+                const prices = [
+                    40, 80, 150, 200, 300, 400, 450, 500, 550, 600, 
+                    650, 700, 750, 800, 900, 1000, 1100, 1200, 1300, 1400,
+                    1500, 1600, 1700, 1800, 2000, 2200, 2400, 2600, 2800, 3000
+                ];
+
+                for (let i = 0; i < 30; i++) {
+                    const price = prices[i];
+                    const totalReturn = price * 11;
+                    const dailyReturn = totalReturn / 100;
+
+                    const newProduct = {
+                        name: productDetails[i].name,
+                        price: price,
+                        totalReturn: totalReturn,
+                        dailyReturn: dailyReturn,
+                        cycleDays: 100,
+                        imageUrl: productDetails[i].imageUrl
+                    };
+
+                    const newDocRef = doc(collection(db, "products"));
+                    newBatch.set(newDocRef, newProduct);
+                }
+
+                await newBatch.commit();
+                
+                statusMessage.textContent = 'Sucesso! 30 novos produtos foram cadastrados.';
+                statusMessage.classList.add('text-green-500');
+                deployButton.textContent = 'Concluído!';
+                console.log("30 novos produtos cadastrados com sucesso.");
+
+            } catch (error) {
+                console.error("Erro ao implantar produtos:", error);
+                statusMessage.textContent = `Erro ao implantar. Verifique se as regras de segurança do Firestore permitem a escrita na coleção 'products'. Detalhes: ${error.message}`;
+                statusMessage.classList.add('text-red-500');
+                deployButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

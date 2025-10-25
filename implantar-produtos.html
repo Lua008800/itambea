@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Implantação de Produtos Itambe</title>
+    <title>Ferramenta de Implantação de Produtos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,66 +13,106 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center h-screen">
-    <div class="text-center p-8 bg-gray-800 rounded-lg shadow-2xl">
-        <h1 class="text-3xl font-bold text-blue-400 mb-4">Implantação de Produtos Itambe</h1>
-        <p class="text-gray-400 mb-6">Clique no botão abaixo para apagar os produtos antigos e cadastrar os 30 novos produtos na sua base de dados do Firestore.</p>
-        <button id="deploy-button" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
-            Implantar Novos Produtos Agora
-        </button>
-        <p id="status-message" class="mt-4 text-sm"></p>
+    <div class="text-center p-8 bg-gray-800 rounded-lg shadow-2xl max-w-lg">
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">Ferramenta de Implantação</h1>
+        <p class="text-gray-400 mb-6">Use isto apenas uma vez para configurar os produtos na base de dados `itambe1`. Certifique-se de que as suas regras do Firestore estão temporariamente abertas.</p>
+        
+        <div class="space-y-4">
+            <button id="delete-button" class="w-full bg-red-600 text-white font-bold py-3 px-6 rounded-md hover:bg-red-700 transition-colors">
+                Passo 1: Apagar Produtos Antigos
+            </button>
+            <button id="deploy-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-md hover:bg-blue-700 transition-colors">
+                Passo 2: Adicionar 30 Novos Produtos
+            </button>
+        </div>
+        <p id="status-message" class="mt-6 text-sm"></p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getFirestore, collection, writeBatch, getDocs, doc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-        // **VERIFIQUE ESTA CONFIGURAÇÃO COM MÁXIMA ATENÇÃO**
+        // **CONFIGURAÇÃO DO PROJETO 'itambe1'**
         const firebaseConfig = {
             apiKey: "AIzaSyAAcSljFY_EZnNZyeDlRD_A5Ac6xMdlfYI",
             authDomain: "itambe1.firebaseapp.com",
             projectId: "itambe1",
-            storageBucket: "itambe1.appspot.com", // <-- Formato correto é .appspot.com
+            storageBucket: "itambe1.appspot.com", // Formato correto
             messagingSenderId: "994625835321",
             appId: "1:994625835321:web:a778e249b04671e83c98e8",
             measurementId: "G-JP3BRJYES3"
         };
 
-        let db; // Declarar fora para acesso no catch
+        let db;
+        const deleteButton = document.getElementById('delete-button');
         const deployButton = document.getElementById('deploy-button');
         const statusMessage = document.getElementById('status-message');
 
         try {
              const app = initializeApp(firebaseConfig);
              db = getFirestore(app);
-             console.log("Firebase inicializado com sucesso no script de implantação.");
+             console.log("Firebase inicializado com sucesso.");
+             statusMessage.textContent = 'Firebase ligado. Pronto a implantar.';
+             statusMessage.classList.add('text-green-500');
         } catch (initError) {
              console.error("Erro CRÍTICO na inicialização do Firebase:", initError);
-             statusMessage.textContent = `Erro GRAVE ao inicializar o Firebase. Verifique a firebaseConfig e o console (F12). Detalhes: ${initError.message}`;
+             statusMessage.textContent = `Erro GRAVE ao inicializar o Firebase. Verifique a firebaseConfig e o console (F12).`;
              statusMessage.classList.add('text-red-500');
-             if(deployButton) deployButton.disabled = true; // Desativa o botão se a inicialização falhar
+             if(deployButton) deployButton.disabled = true;
+             if(deleteButton) deleteButton.disabled = true;
         }
 
-
-        if (db) { // Só adiciona o listener se o DB inicializou
-            deployButton.addEventListener('click', async () => {
+        // Listener para o Botão de Apagar
+        if (db) {
+            deleteButton.addEventListener('click', async () => {
+                if (!confirm("Tem a certeza de que quer apagar TODOS os produtos existentes?")) {
+                    return;
+                }
+                
+                deleteButton.disabled = true;
                 deployButton.disabled = true;
-                statusMessage.textContent = 'A iniciar... Por favor, aguarde.';
+                statusMessage.textContent = 'A apagar produtos antigos...';
                 statusMessage.classList.remove('text-red-500', 'text-green-500');
 
                 try {
-                    // Passo 1: Apagar todos os produtos antigos
-                    statusMessage.textContent = 'A apagar produtos antigos...';
                     const productsRef = collection(db, "products");
                     const oldProductsSnapshot = await getDocs(productsRef);
                     const deleteBatch = writeBatch(db);
+                    
+                    if(oldProductsSnapshot.empty) {
+                        statusMessage.textContent = 'Nenhum produto antigo encontrado para apagar.';
+                        statusMessage.classList.add('text-yellow-500');
+                        console.log("Nenhum produto antigo encontrado.");
+                        deleteButton.disabled = false;
+                        deployButton.disabled = false;
+                        return;
+                    }
+
                     oldProductsSnapshot.forEach(doc => {
                         deleteBatch.delete(doc.ref);
                     });
                     await deleteBatch.commit();
+                    
                     console.log("Produtos antigos apagados com sucesso.");
-                    statusMessage.textContent = 'Produtos antigos apagados. A criar novos...';
+                    statusMessage.textContent = 'Produtos antigos apagados com sucesso. Pode avançar para o Passo 2.';
+                    statusMessage.classList.add('text-green-500');
+                } catch (error) {
+                    console.error("Erro ao apagar produtos:", error);
+                    statusMessage.textContent = `Erro ao apagar: ${error.message}`;
+                    statusMessage.classList.add('text-red-500');
+                }
+                deleteButton.disabled = false;
+                deployButton.disabled = false;
+            });
 
-                    // Passo 2: Criar os novos produtos
+            // Listener para o Botão de Criar
+            deployButton.addEventListener('click', async () => {
+                deleteButton.disabled = true;
+                deployButton.disabled = true;
+                statusMessage.textContent = 'A criar 30 novos produtos...';
+                statusMessage.classList.remove('text-red-500', 'text-green-500');
+
+                try {
                     const newBatch = writeBatch(db);
                     const productDetails = [
                         { name: "Iogurte Natural Cremoso", imageUrl: "https://images.pexels.com/photos/4033235/pexels-photo-4033235.jpeg?auto=compress&cs=tinysrgb&w=600" },
@@ -145,13 +185,7 @@
                     deployButton.disabled = false;
                 }
             });
-        } else {
-             // Caso a inicialização do Firebase tenha falhado
-             statusMessage.textContent = 'Não foi possível inicializar o Firebase. Verifique a configuração.';
-             statusMessage.classList.add('text-red-500');
-             if(deployButton) deployButton.disabled = true;
         }
     </script>
 </body>
 </html>
-
